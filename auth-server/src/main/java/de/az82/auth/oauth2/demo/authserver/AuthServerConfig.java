@@ -58,9 +58,9 @@ public class AuthServerConfig {
                 // Redirect URIs
                 .redirectUri(baseUrl + "/")
                 // Audience does not seem to work. Always returns all scopes
-                .scope("test.read")
-                .scope("test.write")
-                .scope("test.destroy")
+                .scope("resources.read")
+                .scope("resources.add")
+                .scope("resources.delete")
                 .build();
 
         return new InMemoryRegisteredClientRepository(registeredClient);

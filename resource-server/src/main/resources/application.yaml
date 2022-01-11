@@ -1,1 +1,9 @@
-
+server:
+  port: 8082
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Issuer URI configured in the authorization server
+          issuer-uri: http://auth-server:0081
