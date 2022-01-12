@@ -56,4 +56,20 @@ public class ClientController {
                 .block();
         return new ModelAndView("redirect:/");
     }
+
+    @PostMapping(value = "/delete")
+    public ModelAndView deleteResource(
+            String resource,
+            @RegisteredOAuth2AuthorizedClient("client-auth-code") OAuth2AuthorizedClient authorizedClient
+    ) {
+        logger.info("Deleting resource {}", resource);
+        this.webClient
+                .delete()
+                .uri("http://oauth2-demo-resource-server:8082/resources/{resource}", resource)
+                .attributes(oauth2AuthorizedClient(authorizedClient))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        return new ModelAndView("redirect:/");
+    }
 }

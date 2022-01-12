@@ -12,7 +12,7 @@
     <tr th:each="resource : ${resources}">
         <td th:text="${resource}"/>
         <td>
-            <form action="/delete/${resource}" method="post">
+            <form action="/delete" method="post">
                 <input type="hidden" name="resource" value="${resource}"/>
                 <input type="submit" value="🗑"/>
             </form>
