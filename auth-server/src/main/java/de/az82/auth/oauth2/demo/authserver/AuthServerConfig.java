@@ -8,17 +8,14 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.config.ProviderSettings;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.security.KeyPairGenerator;
@@ -27,58 +24,54 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
+import static org.springframework.core.Ordered.HIGHEST_PRECEDENCE;
 import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.oauth2.core.AuthorizationGrantType.*;
+import static org.springframework.security.oauth2.core.ClientAuthenticationMethod.CLIENT_SECRET_BASIC;
 import static org.springframework.security.oauth2.core.ClientAuthenticationMethod.CLIENT_SECRET_POST;
 
-@EnableWebSecurity
-@Import(OAuth2AuthorizationServerConfiguration.class)
+@Configuration(proxyBeanMethods = false)
 public class AuthServerConfig {
 
     private final String baseUrl;
 
     @Autowired
     public AuthServerConfig(@Value("${server.port}") int port) {
-        baseUrl = "http://localhost:" + port;
+        baseUrl = "http://oauth2-demo-auth-server:" + port;
+    }
+
+    @Bean
+    @Order(HIGHEST_PRECEDENCE)
+    public SecurityFilterChain authServerSecurityFilterChain(HttpSecurity http) throws Exception {
+        // Apply default OAuth2 security and generate a form login page
+        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
+        return http.formLogin(withDefaults()).build();
     }
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
-        var registeredClient = RegisteredClient.withId(UUID.randomUUID().toString())
+        var client = RegisteredClient.withId(UUID.randomUUID().toString())
                 // Single hardcoded client. IRL this would be user repository (DB, LDAP, etc.)
                 .clientId("client")
                 // Undocumented: Must be prefixed with {ID}, where ID is the ID of a PasswordEncoder implementation
                 .clientSecret("{noop}melanie1234")
                 // Supported authentication methods
                 .clientAuthenticationMethod(CLIENT_SECRET_POST)
+                .clientAuthenticationMethod(CLIENT_SECRET_BASIC)
                 // Supported grant types
                 .authorizationGrantType(CLIENT_CREDENTIALS)
                 .authorizationGrantType(AUTHORIZATION_CODE)
                 .authorizationGrantType(REFRESH_TOKEN)
-                // Redirect URIs
-                .redirectUri(baseUrl + "/")
-                // Audience does not seem to work. Always returns all scopes
+                // Redirect URIs at the client
+                // WARNING: Spring does not support localhost URLs here as those are not recommended by the OAuth2
+                // standard
+                .redirectUri("http://oauth2-demo-client:8080/authorized")
                 .scope("resources.read")
                 .scope("resources.add")
                 .scope("resources.delete")
                 .build();
 
-        return new InMemoryRegisteredClientRepository(registeredClient);
-    }
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        // Configure the filter chain to generate a default form login page
-        OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
-        return http.formLogin(withDefaults()).build();
-    }
-
-    @Bean
-    public JWKSource<SecurityContext> jwkSource() {
-        // Generate a random RSA key pair to use as signing key
-        // IRL this would be an injected secret
-        var jwkSet = new JWKSet(generateRandomJWK());
-        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
+        return new InMemoryRegisteredClientRepository(client);
     }
 
     @Bean
@@ -87,13 +80,11 @@ public class AuthServerConfig {
     }
 
     @Bean
-    public UserDetailsService users() {
-        var user = User.withUsername("admin")
-                .password("password")
-                .roles("admin")
-                .build();
-
-        return new InMemoryUserDetailsManager(user);
+    public JWKSource<SecurityContext> jwkSource() {
+        // Generate a random RSA key pair to use as signing key
+        // IRL this would be an injected secret
+        var jwkSet = new JWKSet(generateRandomJWK());
+        return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
     }
 
     private static JWK generateRandomJWK() {

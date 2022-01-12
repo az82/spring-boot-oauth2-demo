@@ -9,24 +9,24 @@ import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.http.HttpMethod.GET;
 
 @EnableWebSecurity
-public class ResourceServerConfig {
+public class ResourceServerSecurityConfig {
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.mvcMatcher("/resources/**")
                 .authorizeRequests()
                 .mvcMatchers(GET, "/resources")
-                .access("hasAuthority('resources.read')")
+                .access("hasAuthority('SCOPE_resources.read')")
 
                 .and()
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.POST, "/resources")
-                .access("hasAuthority('resources.add')")
+                .access("hasAuthority('SCOPE_resources.add')")
 
                 .and()
                 .authorizeRequests()
                 .mvcMatchers(HttpMethod.DELETE, "/resources/**")
-                .access("hasAuthority('resources.delete')")
+                .access("hasAuthority('SCOPE_resources.delete')")
 
                 .and()
                 .oauth2ResourceServer()

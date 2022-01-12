@@ -1,0 +1,25 @@
+server:
+  port: 8080
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          client-auth-code:
+            provider: spring
+            client-id: client
+            client-secret: melanie1234
+            authorization-grant-type: authorization_code
+            redirect-uri: "http://oauth2-demo-client:${server.port}/authorized"
+            scope: resources.read
+            client-name: client-auth-code
+        provider:
+          spring:
+            issuer-uri: "http://oauth2-demo-auth-server:8081"
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.springframework.security: INFO
+    org.springframework.security.oauth2: INFO
