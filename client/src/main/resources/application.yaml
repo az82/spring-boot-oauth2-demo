@@ -12,7 +12,11 @@ spring:
             client-secret: melanie1234
             authorization-grant-type: authorization_code
             redirect-uri: "http://oauth2-demo-client:${server.port}/authorized"
-            scope: resources.read
+            scope:
+              - resources.read
+              - resources.add
+              # Note that the scope resources.delete is omitted
+              # - resources.delete
             client-name: client-auth-code
         provider:
           spring:

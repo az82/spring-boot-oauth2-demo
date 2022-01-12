@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resources</title>
+</head>
+<body>
+<h1>Resources</h1>
+<table>
+    <tr th:each="resource : ${resources}">
+        <td th:text="${resource}"/>
+        <td>
+            <form action="/delete/${resource}" method="post">
+                <input type="hidden" name="resource" value="${resource}"/>
+                <input type="submit" value="🗑"/>
+            </form>
+        </td>
+    </tr>
+</table>
+<form action="/add" method="post">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <label for="resource">Add resource:</label>
+    <input type="text" name="resource" id="resource"/>
+    <input type="submit" value="➕"/>
+</form>
+</body>
+</html>
