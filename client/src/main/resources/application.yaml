@@ -15,7 +15,7 @@ spring:
             scope:
               - resources.read
               - resources.add
-              - resources.delete
+              # - resources.delete
             client-name: client-auth-code
         provider:
           spring:
