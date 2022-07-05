@@ -13,7 +13,8 @@
         <td th:text="${resource}"/>
         <td>
             <form action="/delete" method="post">
-                <input type="hidden" name="resource" value="${resource}"/>
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                <input type="hidden" name="resource" th:value="${resource}"/>
                 <input type="submit" value="🗑"/>
             </form>
         </td>
