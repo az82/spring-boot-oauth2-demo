@@ -45,7 +45,7 @@ http -v -f POST oauth2-demo-auth-server:8081/oauth2/token grant_type=client_cred
 Will fail, no token.
 
 ```bash
-http -v -f GET oauth2-demo-resource-server:8082/
+http -v -f GET oauth2-demo-resource-server:8082/resources/
 ```
 
 ### Access With The Client Application
